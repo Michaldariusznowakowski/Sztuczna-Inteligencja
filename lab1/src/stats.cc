@@ -1,4 +1,20 @@
+/**
+ * @file stats.cc
+ * @author Michał Nowakowski (michaldariusznowakowski@protonmail.com)
+ * @brief  Implementation of stats class. This class is responsible for storing
+ * statistics.
+ * @version 0.1
+ * @date 2023-03-12
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #include "stats.h"
+void Stats::reset() {
+  this->variables_.clear();
+  this->start_time_ = std::chrono::system_clock::now();
+  this->total_time_ = std::chrono::nanoseconds(0);
+}
 void Stats::startTimer() {
   this->start_time_ = std::chrono::system_clock::now();
 }

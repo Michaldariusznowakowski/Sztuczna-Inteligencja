@@ -1,5 +1,15 @@
-#ifndef CHESSBOARD_CHESSBOARD_H
-#define CHESSBOARD_CHESSBOARD_H
+/**
+ * @file chessboard.h
+ * @author Michał Nowakowski (michaldariusznowakowski@protonmail.com)
+ * @brief  Class for chessboard representation and operations on it.
+ * @version 0.1
+ * @date 2023-03-12
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
+#ifndef CHESSBOARD_H
+#define CHESSBOARD_H
 #include <memory>
 #include <queue>
 #include <vector>
@@ -40,11 +50,37 @@ class Chessboard {
    * @return std::string
    */
   std::string dumpChessboard();
+  /**
+   * @brief DFS algorithm. Recursive function.
+   *
+   * @param vec
+   * @param skip
+   * @return int
+   */
   int DFSprocess(const std::vector<int> &vec, const unsigned short &skip = 0);
-
+  /**
+   * @brief DFS algorithm.
+   *
+   * @param size
+   */
   void DFS(unsigned short size);
-  std::queue<std::vector<int>> BFSProcess(std::queue<std::vector<int>> *queue,
-                                          int skip, int vecSize);
+  /**
+   * @brief BFS algorithm. Recursive function.
+   *
+   * @param size
+   */
+  std::queue<std::vector<int>> BFSProcess(int skip, std::vector<int> vec);
+  /**
+   * @brief Get the Cheesboard Pos object
+   *
+   * @return std::vector<int>
+   */
+  std::vector<int> getCheesboardPos();
+  /**
+   * @brief BFS algorithm.
+   *
+   * @param size
+   */
   void BFS(unsigned short size);
 };
 #endif

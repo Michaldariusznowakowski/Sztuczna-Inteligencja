@@ -1,5 +1,16 @@
-#ifndef STATS_STATS_H
-#define STATS_STATS_H
+/**
+ * @file stats.h
+ * @author Michał Nowakowski (michaldariusznowakowski@protonmail.com)
+ * @brief Header file for stats class. This class is responsible for storing and
+ * manipulating statistics.
+ * @version 0.1
+ * @date 2023-03-12
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
+#ifndef STATS_H
+#define STATS_H
 #include <chrono>
 #include <map>
 #include <string>
@@ -12,6 +23,7 @@ class Stats : public StatsInterface {
   std::chrono::nanoseconds total_time_;
 
  public:
+  void reset() override;
   void startTimer() override;
   void stopTimer() override;
   unsigned long int getDuration() override;

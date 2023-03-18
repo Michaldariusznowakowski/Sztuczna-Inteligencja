@@ -1,3 +1,14 @@
+/**
+ * @file logger.cc
+ * @author Michał Nowakowski (michaldariusznowakowski@protonmail.com)
+ * @brief  Implementation of logger class. This class is responsible for logging
+ * messages.
+ * @version 0.1
+ * @date 2023-03-12
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #include "logger.h"
 
 #include <iostream>

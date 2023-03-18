@@ -4,7 +4,7 @@ ECHO OFF
 SET hostTriplet=x64-mingw-static
 SET triplet=x64-mingw-static
 @REM LIBRARIES LIST
-SET LIBRARIES=matplotplusplus matio spdlog
+SET LIBRARIES=matplotplusplus matio spdlog nana
 
 @REM SETTINGS END
 ECHO *************************************************************

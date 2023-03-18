@@ -6,8 +6,9 @@ file(GLOB_RECURSE lab1_SRC
 
 add_executable(lab1 ${lab1_SRC})
 
-find_package(spdlog CONFIG REQUIRED)
-
+# find_package(spdlog CONFIG REQUIRED)
+find_package(unofficial-nana CONFIG REQUIRED)
+    target_link_libraries(lab1 PRIVATE unofficial::nana::nana)
 find_package(Matplot++ CONFIG REQUIRED)
     target_link_libraries(lab1 PRIVATE Matplot++::cimg std::filesystem Matplot++::matplot Matplot++::nodesoup)
 
