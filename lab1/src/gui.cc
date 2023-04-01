@@ -14,18 +14,21 @@
 #include <nana/gui.hpp>
 #include <nana/gui/msgbox.hpp>
 #include <nana/gui/widgets/button.hpp>
+#include <nana/gui/widgets/checkbox.hpp>
 #include <nana/gui/widgets/label.hpp>
 
 #include "chessboard.h"
 #include "loggerinterface.h"
 #include "plotstats.h"
 #include "statsinterface.h"
-std::string Gui::findSolutionBFS(const unsigned int &size) {
-  this->ptr_chessboard_->BFS(size);
+std::string Gui::findSolutionBFS(const unsigned int &size,
+                                 const bool &boostMode) {
+  this->ptr_chessboard_->BFS(size, boostMode);
   return this->ptr_chessboard_->dumpChessboard();
 }
-std::string Gui::findSolutionDFS(const unsigned int &size) {
-  this->ptr_chessboard_->DFS(size);
+std::string Gui::findSolutionDFS(const unsigned int &size,
+                                 const bool &boostMode) {
+  this->ptr_chessboard_->DFS(size, boostMode);
   return this->ptr_chessboard_->dumpChessboard();
 }
 Gui::Gui(const std::shared_ptr<LoggerInterface> &logger,
@@ -57,7 +60,8 @@ void Gui::showResult(const std::string &result, const nana::form &fm) {
   msg << result;
   msg.show();
 }
-void Gui::graphSolutionBFS(const unsigned int &start, const unsigned int &end) {
+void Gui::graphSolutionBFS(const unsigned int &start, const unsigned int &end,
+                           const bool &boostMode) {
   std::vector<unsigned long int> times;
   std::vector<int> checkedStates;
   std::vector<int> generatedStates;
@@ -83,7 +87,8 @@ void Gui::graphSolutionBFS(const unsigned int &start, const unsigned int &end) {
   PlotStats::plotQueensStats("Stats for BFS", times, checkedStates,
                              generatedStates, sizes);
 }
-void Gui::graphSolutionDFS(const unsigned int &start, const unsigned int &end) {
+void Gui::graphSolutionDFS(const unsigned int &start, const unsigned int &end,
+                           const bool &boostMode) {
   std::vector<unsigned long int> times;
   std::vector<int> checkedStates;
   std::vector<int> generatedStates;
@@ -114,34 +119,36 @@ void Gui::runLoop() {
   this->ptr_logger_->info("Gui::runLoop", "Starting GUI loop.");
   nana::form fm;
   fm.caption("N-Queens problem");
-  // add transparent background
+  // Make check box for boost mode. Using nana library.
+  nana::checkbox boostMode{fm, nana::rectangle{10, 10, 200, 20}};
   nana::button findSolBFS(fm, "Find solution BFS");
   nana::button findSolDFS(fm, "Find solution DFS");
   nana::button graphSolBFS(fm, "Graph solutions BFS");
   nana::button graphSolDFS(fm, "Graph solutions DFS");
   nana::button exit(fm, "Exit program. ❗");
-  findSolBFS.events().click([&fm, this] {
+  findSolBFS.events().click([&] {
     this->ptr_logger_->info("Gui::runLoop", "Clicked find solution BFS.");
     this->ptr_stats_->reset();
     nana::inputbox ibox(fm, "Find solution BFS");
     nana::inputbox::integer size("Size of chessboard", 4, 4, 20, 1);
     if (ibox.show(size)) {
-      this->ptr_chessboard_->BFS(size.value());
+      this->ptr_chessboard_->BFS(size.value(), boostMode.checked());
       std::string result = this->ptr_chessboard_->dumpChessboard();
       this->showResult(result, fm);
     }
   });
-  findSolDFS.events().click([&fm, this] {
+  findSolDFS.events().click([&] {
     this->ptr_logger_->info("Gui::runLoop", "Clicked find solution DFS.");
     this->ptr_stats_->reset();
     nana::inputbox ibox(fm, "Find solution DFS");
     nana::inputbox::integer size("Size of chessboard", 4, 4, 30, 1);
     if (ibox.show(size)) {
-      std::string result = this->findSolutionDFS(size.value());
+      std::string result =
+          this->findSolutionDFS(size.value(), boostMode.checked());
       this->showResult(result, fm);
     }
   });
-  graphSolBFS.events().click([&fm, this] {
+  graphSolBFS.events().click([&] {
     this->ptr_logger_->info("Gui::runLoop", "Clicked graph solutions BFS.");
     nana::inputbox ibox(fm, "Graph solutions BFS");
     nana::inputbox::integer start("Start size", 4, 4, 30, 1);
@@ -149,11 +156,11 @@ void Gui::runLoop() {
       nana::inputbox::integer end("End size", start.value(), start.value(), 20,
                                   1);
       if (ibox.show(end)) {
-        this->graphSolutionBFS(start.value(), end.value());
+        this->graphSolutionBFS(start.value(), end.value(), boostMode.checked());
       }
     }
   });
-  graphSolDFS.events().click([&fm, this] {
+  graphSolDFS.events().click([&] {
     this->ptr_logger_->info("Gui::runLoop", "Clicked graph solutions DFS.");
     nana::inputbox ibox(fm, "Graph solutions DFS");
     nana::inputbox::integer start("Start size", 4, 4, 20, 1);
@@ -161,7 +168,7 @@ void Gui::runLoop() {
       nana::inputbox::integer end("End size", start.value(), start.value(), 20,
                                   1);
       if (ibox.show(end)) {
-        this->graphSolutionDFS(start.value(), end.value());
+        this->graphSolutionDFS(start.value(), end.value(), boostMode.checked());
       }
     }
   });
@@ -169,12 +176,13 @@ void Gui::runLoop() {
   exit.events().click([&fm] { fm.close(); });
   fm.div(
       "vert"
-      "<<findSolBFS><findSolDFS>><<graphSolBFS><graphSolDFS>> "
+      "<<findSolBFS><findSolDFS>><<graphSolBFS><graphSolDFS><boostMode>> "
       "<exit>");
   fm["findSolBFS"] << findSolBFS;
   fm["findSolDFS"] << findSolDFS;
   fm["graphSolBFS"] << graphSolBFS;
   fm["graphSolDFS"] << graphSolDFS;
+  fm["boostMode"] << boostMode;
   fm["exit"] << exit;
   fm.collocate();
 

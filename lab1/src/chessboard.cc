@@ -52,7 +52,8 @@ bool Chessboard::checkIfCanAttack(const std::vector<int> &vec) {
 }
 int Chessboard::generateNextColumn(const std::vector<int> &chessboard,
                                    std::queue<std::vector<int>> *queue,
-                                   unsigned short column) {
+                                   unsigned short column,
+                                   const bool &boostMode) {
   if (column < 0) {
     this->ptr_logger_->critical("Chessboard::generateNextColumn",
                                 "column cannot be smaller than 0!");
@@ -64,11 +65,28 @@ int Chessboard::generateNextColumn(const std::vector<int> &chessboard,
         "Selected column number is bigger than vector max size!");
     return 1;
   }
-  for (int i = 0; i < chessboard.size(); i++) {
-    std::vector<int> copy(chessboard);
-    copy[column] = i;
-    queue->push(copy);
-    this->ptr_stats_->incrementVariable("generatedStates");
+  if (boostMode == true) {
+    for (int i = 0; i < chessboard.size(); i++) {
+      std::vector<int> copy(chessboard);
+      // skip if queen is already in this row
+      if (column != 0 && chessboard[column - 1] == i) {
+        continue;
+      }
+      // Skip if queen is diagonal to previous queen
+      if (column != 0 && abs(chessboard[column - 1] - i) == 1) {
+        continue;
+      }
+      copy[column] = i;
+      queue->push(copy);
+      this->ptr_stats_->incrementVariable("generatedStates");
+    }
+  } else {
+    for (int i = 0; i < chessboard.size(); i++) {
+      std::vector<int> copy(chessboard);
+      copy[column] = i;
+      queue->push(copy);
+      this->ptr_stats_->incrementVariable("generatedStates");
+    }
   }
   return 0;
 }
@@ -97,7 +115,7 @@ std::vector<int> Chessboard::getCheesboardPos() {
   return this->cheesboard_pos_;
 }
 int Chessboard::DFSprocess(const std::vector<int> &vec,
-                           const unsigned short &skip) {
+                           const unsigned short &skip, const bool &boostMode) {
   size_t size = vec.size();
   if (skip == size) {
     this->cheesboard_pos_ = vec;
@@ -105,12 +123,11 @@ int Chessboard::DFSprocess(const std::vector<int> &vec,
   }
   for (size_t i = skip; i < size; i++) {
     std::queue<std::vector<int>> queue;
-    this->generateNextColumn(vec, &queue, i);
+    this->generateNextColumn(vec, &queue, i, boostMode);
     bool found = false;
-    for (size_t i = 0; i < size; i++) {
+    while (!queue.empty()) {
       auto vecNew = queue.front();
       queue.pop();
-      // debug
       std::string output = "[";
       for (size_t i = 0; i < vecNew.size(); i++) {
         output += std::to_string(vecNew[i]) + " ";
@@ -118,7 +135,7 @@ int Chessboard::DFSprocess(const std::vector<int> &vec,
       output += "]";
       this->ptr_logger_->info("Chessboard::DFSprocess", "Checking: " + output);
       if (!checkIfCanAttack(vecNew)) {
-        if (DFSprocess(vecNew, skip + 1) == 0) {
+        if (DFSprocess(vecNew, skip + 1, boostMode) == 0) {
           return 0;
         } else {
           found = false;
@@ -131,29 +148,30 @@ int Chessboard::DFSprocess(const std::vector<int> &vec,
   }
   return 1;
 }
-void Chessboard::DFS(unsigned short size) {
+void Chessboard::DFS(unsigned short size, const bool &boostMode) {
   this->ptr_stats_->startTimer();
   std::vector<int> vec;
   for (size_t i = 0; i < size; i++) {
     vec.emplace_back(-1);
   }
   this->cheesboard_pos_ = vec;
-  this->DFSprocess(vec, 0);
+  this->DFSprocess(vec, 0, boostMode);
   this->ptr_stats_->stopTimer();
 }
 std::queue<std::vector<int>> Chessboard::BFSProcess(int skip,
-                                                    std::vector<int> vec) {
+                                                    std::vector<int> vec,
+                                                    const bool &boostMode) {
   if (skip == vec.size()) {
     std::queue<std::vector<int>> queue;
     return queue;
   }
   std::queue<std::vector<int>> queue;
-  this->generateNextColumn(vec, &queue, skip);
+  this->generateNextColumn(vec, &queue, skip, boostMode);
   std::queue<std::vector<int>> copy(queue);
   while (!copy.empty()) {
     auto vec = copy.front();
     copy.pop();
-    auto qFromRec = this->BFSProcess(skip + 1, vec);
+    auto qFromRec = this->BFSProcess(skip + 1, vec, boostMode);
     while (!qFromRec.empty()) {
       queue.push(qFromRec.front());
       qFromRec.pop();
@@ -162,27 +180,26 @@ std::queue<std::vector<int>> Chessboard::BFSProcess(int skip,
   return queue;
 }
 
-void Chessboard::BFS(unsigned short size) {
+void Chessboard::BFS(unsigned short size, const bool &boostMode) {
   std::vector<int> vec;
   for (size_t i = 0; i < size; i++) {
     vec.emplace_back(-1);
   }
   this->cheesboard_pos_ = vec;
   this->ptr_stats_->startTimer();
-  auto queue = this->BFSProcess(0, vec);
+  auto queue = this->BFSProcess(0, vec, boostMode);
   while (!queue.empty()) {
     auto vec = queue.front();
     queue.pop();
-    if (vec.back() == -1) {
-      continue;
-    }
-    // debug
     std::string output = "[";
     for (size_t i = 0; i < vec.size(); i++) {
       output += std::to_string(vec[i]) + " ";
     }
     output += "]";
     this->ptr_logger_->info("Chessboard::BFS", "Checking: " + output);
+    if (vec.back() == -1) {
+      continue;
+    }
     if (!this->checkIfCanAttack(vec)) {
       this->cheesboard_pos_ = vec;
       break;

@@ -40,14 +40,16 @@ class Gui {
    * @param size
    * @return std::string
    */
-  std::string findSolutionDFS(const unsigned int &size);
+  std::string findSolutionDFS(const unsigned int &size,
+                              const bool &boostMode = false);
   /**
    * @brief This method will call BFS method from chessboard class.
    *
    * @param size
    * @return std::string
    */
-  std::string findSolutionBFS(const unsigned int &size);
+  std::string findSolutionBFS(const unsigned int &size,
+                              const bool &boostMode = false);
   /**
    * @brief This method will call DFS method from chessboard class multiple
    * times and will create plot with stats.
@@ -55,7 +57,8 @@ class Gui {
    * @param start
    * @param end
    */
-  void graphSolutionDFS(const unsigned int &start, const unsigned int &end);
+  void graphSolutionDFS(const unsigned int &start, const unsigned int &end,
+                        const bool &boostMode = false);
   /**
    * @brief This method will call BFS method from chessboard class multiple
    * times and will create plot with stats.
@@ -63,7 +66,8 @@ class Gui {
    * @param start
    * @param end
    */
-  void graphSolutionBFS(const unsigned int &start, const unsigned int &end);
+  void graphSolutionBFS(const unsigned int &start, const unsigned int &end,
+                        const bool &boostMode = false);
   /**
    * @brief Helper method to show result in message box.
    *

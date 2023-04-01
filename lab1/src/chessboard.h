@@ -43,7 +43,7 @@ class Chessboard {
    */
   int generateNextColumn(const std::vector<int> &chessboard,
                          std::queue<std::vector<int>> *queue,
-                         unsigned short column);
+                         unsigned short column, const bool &boostMode = false);
   /**
    * @brief Convert chessboard to string output.
    *
@@ -57,19 +57,21 @@ class Chessboard {
    * @param skip
    * @return int
    */
-  int DFSprocess(const std::vector<int> &vec, const unsigned short &skip = 0);
+  int DFSprocess(const std::vector<int> &vec, const unsigned short &skip = 0,
+                 const bool &boostMode = false);
   /**
    * @brief DFS algorithm.
    *
    * @param size
    */
-  void DFS(unsigned short size);
+  void DFS(unsigned short size, const bool &boostMode = false);
   /**
    * @brief BFS algorithm. Recursive function.
    *
    * @param size
    */
-  std::queue<std::vector<int>> BFSProcess(int skip, std::vector<int> vec);
+  std::queue<std::vector<int>> BFSProcess(int skip, std::vector<int> vec,
+                                          const bool &boostMode = false);
   /**
    * @brief Get the Cheesboard Pos object
    *
@@ -81,6 +83,6 @@ class Chessboard {
    *
    * @param size
    */
-  void BFS(unsigned short size);
+  void BFS(unsigned short size, const bool &boostMode = false);
 };
 #endif
