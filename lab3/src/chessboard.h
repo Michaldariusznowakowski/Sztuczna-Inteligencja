@@ -91,9 +91,49 @@ class Chessboard {
    * @param size  Size of the chessboard.
    * @param boostMode  Boost mode.
    */
-  void h2Heuristic(unsigned short size, const bool &boostMode = false);
-  std::vector<int> h2HeuristicProcess(int skip, std::vector<int> vec,
+  void H2(unsigned short size, const bool &boostMode = false);
+  /**
+   * @brief H2 heuristic algorithm. Recursive function.
+   *
+   * @param skip
+   * @param vec
+   * @return std::vector<int>
+   */
+  std::vector<int> H2Process(int skip, std::vector<int> vec,
                                       const bool &boostMode = false);
-  int h2getForRow(const std::vector<int> &vec, const unsigned short &column);
+
+  /**
+   * @brief Calculate heuristic value for H2 algorithm.
+   * 
+   * @param vec
+   * @param column
+   * @return int
+   */
+
+  int H2Calculate(const std::vector<int> &vec, const unsigned short &column);
+  /**
+   * @brief H3 heuristic algorithm.
+   *
+   * @param size  Size of the chessboard.
+   * @param boostMode  Boost mode.
+   */
+  void H3(unsigned short size, const bool &boostMode = false);
+  /**
+   * @brief H3 heuristic algorithm. Recursive function.
+   *
+   * @param skip
+   * @param vec
+   * @return std::vector<int>
+   */
+  std::vector<int> H3Process(int skip, std::vector<int> vec,
+                                      const bool &boostMode = false);
+  /**
+   * @brief Calculate heuristic value for H3 algorithm.
+   * 
+   * @param vec
+   * @param column
+   * @return int
+   */
+  int H3Calculate(const std::vector<int> &vec, const unsigned short &column);
 };
 #endif

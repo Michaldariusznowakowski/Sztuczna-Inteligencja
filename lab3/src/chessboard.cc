@@ -17,9 +17,6 @@
 
 bool Chessboard::checkIfCanAttack(const std::vector<int> &vec) {
   this->ptr_stats_->incrementVariable("checkedStates");
-  if (vec.back() == -1) {
-    return true;
-  }
   // check if same row
   for (size_t i = 0; i < vec.size(); i++) {
     if (vec[i] == -1) {
@@ -190,7 +187,7 @@ std::queue<std::vector<int>> Chessboard::BFSProcess(int skip,
   }
   return queue;
 }
-int Chessboard::h2getForRow(const std::vector<int> &vec,
+int Chessboard::H2Calculate(const std::vector<int> &vec,
                             const unsigned short &column) {
   int vecSize = vec.size();
   if (column == vecSize) {
@@ -198,9 +195,7 @@ int Chessboard::h2getForRow(const std::vector<int> &vec,
   }
   int columnToCheck = vecSize - column - 1;
   int sum = 0;
-  // Get all queens in the same row
   sum += columnToCheck;
-  // Get all queens in  diagonal
   int row = vec[column];
   for (size_t k = 0; k < columnToCheck; k++) {
     for (size_t i = 0; i < vecSize; i++) {
@@ -213,8 +208,8 @@ int Chessboard::h2getForRow(const std::vector<int> &vec,
   }
   return sum;
 }
-void Chessboard::h2Heuristic(unsigned short size,
-                             const bool &boostMode = false) {
+void Chessboard::H2(unsigned short size,
+                             const bool &boostMode) {
   std::vector<int> vec;
   for (size_t i = 0; i < size; i++) {
     vec.emplace_back(-1);
@@ -222,12 +217,18 @@ void Chessboard::h2Heuristic(unsigned short size,
   this->cheesboard_pos_ = vec;
   std::queue<std::vector<int>> queue;
   this->ptr_stats_->startTimer();
-  auto vecOutput = this->h2HeuristicProcess(0, vec, boostMode);
+  auto vecOutput = this->H2Process(0, vec, boostMode);
   this->cheesboard_pos_ = vecOutput;
   this->ptr_stats_->stopTimer();
 }
-std::vector<int> Chessboard::h2HeuristicProcess(int skip, std::vector<int> vec,
-                                                const bool &boostMode = false) {
+std::vector<int> Chessboard::H2Process(int skip, std::vector<int> vec,
+                                                const bool &boostMode) {
+   std::string textTest = "[";
+    for (size_t i = 0; i < vec.size(); i++) {
+      textTest += std::to_string(vec[i]) + " ";
+    }
+    textTest += "]";
+    this->ptr_logger_->info("Chessboard::H2Process", "Checking: " + textTest);
   std::vector<int> output;
   if (skip == vec.size()) {
     if (!this->checkIfCanAttack(vec)) {
@@ -244,7 +245,7 @@ std::vector<int> Chessboard::h2HeuristicProcess(int skip, std::vector<int> vec,
   while (!queueNextColumn.empty()) {
     auto vec = queueNextColumn.front();
     queueNextColumn.pop();
-    vecPair.emplace_back(vec, this->h2getForRow(vec, skip));
+    vecPair.emplace_back(vec, this->H2Calculate(vec, skip));
   }
   std::sort(vecPair.begin(), vecPair.end(),
             [](const std::pair<std::vector<int>, int> &a,
@@ -255,7 +256,7 @@ std::vector<int> Chessboard::h2HeuristicProcess(int skip, std::vector<int> vec,
   for (size_t i = 0; i < sizeVecPair; i++) {
     std::vector<int> vecNew(vecPair[i].first);
     std::vector<int> outputNew;
-    outputNew = this->h2HeuristicProcess(skip + 1, vecNew);
+    outputNew = this->H2Process(skip + 1, vecNew, boostMode);
     if (!outputNew.empty()) {
       return outputNew;
     } else {
@@ -264,7 +265,81 @@ std::vector<int> Chessboard::h2HeuristicProcess(int skip, std::vector<int> vec,
   }
   return output;
 }
-
+int Chessboard::H3Calculate(const std::vector<int> &vec,
+                            const unsigned short &column) {
+  int vecSize = vec.size();
+  if (column == vecSize) {
+    return 0;
+  }
+  int sum = 0;
+  for (size_t i = 0; i <= column; i++) {
+    for (size_t j = i + 1; j <= column; j++) {
+      if (vec[i] == vec[j]) {
+        sum++;
+      } else if (abs(vec[i] - vec[j]) == abs(int(i) - int(j))) {
+        sum++;
+      }
+    }
+  }
+  return sum;
+}
+void Chessboard::H3(unsigned short size,
+                             const bool &boostMode) {
+  std::vector<int> vec;
+  for (size_t i = 0; i < size; i++) {
+    vec.emplace_back(-1);
+  }
+  this->cheesboard_pos_ = vec;
+  std::queue<std::vector<int>> queue;
+  this->ptr_stats_->startTimer();
+  auto vecOutput = this->H3Process(0, vec, boostMode);
+  this->cheesboard_pos_ = vecOutput;
+  this->ptr_stats_->stopTimer();
+}
+std::vector<int> Chessboard::H3Process(int skip, std::vector<int> vec,
+                                                const bool &boostMode) {
+   std::string textTest = "[";
+    for (size_t i = 0; i < vec.size(); i++) {
+      textTest += std::to_string(vec[i]) + " ";
+    }
+    textTest += "]";
+    this->ptr_logger_->info("Chessboard::H3Process", "Checking: " + textTest);
+  std::vector<int> output;
+  if (skip == vec.size()) {
+    if (!this->checkIfCanAttack(vec)) {
+      return vec;
+    }
+    return output;
+  }
+  std::vector<std::pair<std::vector<int>, int>> vecPair;
+  std::queue<std::vector<int>> queueNextColumn;
+  this->generateNextColumn(vec, &queueNextColumn, skip, boostMode);
+  if (queueNextColumn.empty()) {
+    return output;
+  }
+  while (!queueNextColumn.empty()) {
+    auto vec = queueNextColumn.front();
+    queueNextColumn.pop();
+    vecPair.emplace_back(vec, this->H3Calculate(vec, skip));
+  }
+  std::sort(vecPair.begin(), vecPair.end(),
+            [](const std::pair<std::vector<int>, int> &a,
+               const std::pair<std::vector<int>, int> &b) {
+              return a.second > b.second;
+            });
+  size_t sizeVecPair = vecPair.size();
+  for (size_t i = 0; i < sizeVecPair; i++) {
+    std::vector<int> vecNew(vecPair[i].first);
+    std::vector<int> outputNew;
+    outputNew = this->H3Process(skip + 1, vecNew, boostMode);
+    if (!outputNew.empty()) {
+      return outputNew;
+    } else {
+      continue;
+    }
+  }
+  return output;
+}
 void Chessboard::BFS(unsigned short size, const bool &boostMode) {
   std::vector<int> vec;
   for (size_t i = 0; i < size; i++) {
@@ -283,6 +358,9 @@ void Chessboard::BFS(unsigned short size, const bool &boostMode) {
     output += "]";
     this->ptr_logger_->info("Chessboard::BFS", "Checking: " + output);
     if (!this->checkIfCanAttack(vec)) {
+      if (vec.back() == -1) {
+        continue;
+      }
       this->cheesboard_pos_ = vec;
       break;
     }

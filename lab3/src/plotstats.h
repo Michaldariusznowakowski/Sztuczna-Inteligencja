@@ -31,8 +31,8 @@ class PlotStats {
    */
   static void plotQueensStats(const std::string &title,
                               const std::vector<unsigned long int> &times,
-                              const std::vector<int> &generatedStates,
                               const std::vector<int> &checkedStates,
+                              const std::vector<int> &generatedStates,
                               const std::vector<unsigned int> &sizes) {
     auto figure = matplot::figure();
     figure->title(title);

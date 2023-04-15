@@ -35,27 +35,12 @@ class Gui {
    */
   std::unique_ptr<Chessboard> ptr_chessboard_;
   /**
-   * @brief This method will call DFS method from chessboard class.
-   *
-   * @param size
-   * @return std::string
-   */
-  std::string findSolutionDFS(const unsigned int &size,
-                              const bool &boostMode = false);
-  /**
-   * @brief This method will call BFS method from chessboard class.
-   *
-   * @param size
-   * @return std::string
-   */
-  std::string findSolutionBFS(const unsigned int &size,
-                              const bool &boostMode = false);
-  /**
    * @brief This method will call DFS method from chessboard class multiple
    * times and will create plot with stats.
    *
    * @param start
    * @param end
+   * @param boostMode
    */
   void graphSolutionDFS(const unsigned int &start, const unsigned int &end,
                         const bool &boostMode = false);
@@ -65,8 +50,29 @@ class Gui {
    *
    * @param start
    * @param end
+   * @param boostMode
    */
   void graphSolutionBFS(const unsigned int &start, const unsigned int &end,
+                        const bool &boostMode = false);
+  /**
+   * @brief This method will call H2 method from chessboard class multiple
+   * times and will create plot with stats.
+   *
+   * @param start
+   * @param end
+   * @param boostMode
+   */
+  void graphSolutionH2(const unsigned int &start, const unsigned int &end,
+                        const bool &boostMode = false);
+  /**
+   * @brief This method will call H3 method from chessboard class multiple
+   * times and will create plot with stats.
+   *
+   * @param start
+   * @param end
+   * @param boostMode
+   */
+  void graphSolutionH3(const unsigned int &start, const unsigned int &end,
                         const bool &boostMode = false);
   /**
    * @brief Helper method to show result in message box.

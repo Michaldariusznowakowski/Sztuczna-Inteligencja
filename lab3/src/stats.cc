@@ -39,7 +39,7 @@ unsigned long int Stats::getDuration() {
 void Stats::incrementVariable(const std::string &name) {
   auto it = this->variables_.find(name);
   if (it == this->variables_.end()) {
-    this->variables_.emplace(name, 0);
+    this->variables_.emplace(name, 1);
   } else {
     it->second = it->second + 1;
   }
