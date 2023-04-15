@@ -10,12 +10,16 @@
  */
 #include "chessboard.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
 
 bool Chessboard::checkIfCanAttack(const std::vector<int> &vec) {
   this->ptr_stats_->incrementVariable("checkedStates");
+  if (vec.back() == -1) {
+    return true;
+  }
   // check if same row
   for (size_t i = 0; i < vec.size(); i++) {
     if (vec[i] == -1) {
@@ -59,26 +63,33 @@ int Chessboard::generateNextColumn(const std::vector<int> &chessboard,
                                 "column cannot be smaller than 0!");
     return 1;
   }
-  if (column > chessboard.size()) {
+  if (column >= chessboard.size()) {
     this->ptr_logger_->critical(
         "Chessboard::generateNextColumn",
-        "Selected column number is bigger than vector max size!");
+        "Selected column number is greater than or equal to vector max size!");
     return 1;
   }
-  if (boostMode == true) {
+  if (boostMode) {
     for (int i = 0; i < chessboard.size(); i++) {
+      bool skip = false;
       std::vector<int> copy(chessboard);
-      // skip if queen is already in this row
-      if (column != 0 && chessboard[column - 1] == i) {
-        continue;
+      for (int j = 0; j < column; j++) {
+        // Check if copy has i in one of values
+        if (copy[j] == i) {
+          skip = true;
+          break;
+        }
+        // check if copy i is diagonal to j
+        if (abs(copy[j] - i) == abs(j - column)) {
+          skip = true;
+          break;
+        }
       }
-      // Skip if queen is diagonal to previous queen
-      if (column != 0 && abs(chessboard[column - 1] - i) == 1) {
-        continue;
+      if (!skip) {
+        copy[column] = i;
+        queue->push(copy);
+        this->ptr_stats_->incrementVariable("generatedStates");
       }
-      copy[column] = i;
-      queue->push(copy);
-      this->ptr_stats_->incrementVariable("generatedStates");
     }
   } else {
     for (int i = 0; i < chessboard.size(); i++) {
@@ -179,6 +190,80 @@ std::queue<std::vector<int>> Chessboard::BFSProcess(int skip,
   }
   return queue;
 }
+int Chessboard::h2getForRow(const std::vector<int> &vec,
+                            const unsigned short &column) {
+  int vecSize = vec.size();
+  if (column == vecSize) {
+    return 0;
+  }
+  int columnToCheck = vecSize - column - 1;
+  int sum = 0;
+  // Get all queens in the same row
+  sum += columnToCheck;
+  // Get all queens in  diagonal
+  int row = vec[column];
+  for (size_t k = 0; k < columnToCheck; k++) {
+    for (size_t i = 0; i < vecSize; i++) {
+      if (row + 1 + k == i) {
+        sum++;
+      } else if (abs(row - vecSize + int(k)) == i) {
+        sum++;
+      }
+    }
+  }
+  return sum;
+}
+void Chessboard::h2Heuristic(unsigned short size,
+                             const bool &boostMode = false) {
+  std::vector<int> vec;
+  for (size_t i = 0; i < size; i++) {
+    vec.emplace_back(-1);
+  }
+  this->cheesboard_pos_ = vec;
+  std::queue<std::vector<int>> queue;
+  this->ptr_stats_->startTimer();
+  auto vecOutput = this->h2HeuristicProcess(0, vec, boostMode);
+  this->cheesboard_pos_ = vecOutput;
+  this->ptr_stats_->stopTimer();
+}
+std::vector<int> Chessboard::h2HeuristicProcess(int skip, std::vector<int> vec,
+                                                const bool &boostMode = false) {
+  std::vector<int> output;
+  if (skip == vec.size()) {
+    if (!this->checkIfCanAttack(vec)) {
+      return vec;
+    }
+    return output;
+  }
+  std::vector<std::pair<std::vector<int>, int>> vecPair;
+  std::queue<std::vector<int>> queueNextColumn;
+  this->generateNextColumn(vec, &queueNextColumn, skip, boostMode);
+  if (queueNextColumn.empty()) {
+    return output;
+  }
+  while (!queueNextColumn.empty()) {
+    auto vec = queueNextColumn.front();
+    queueNextColumn.pop();
+    vecPair.emplace_back(vec, this->h2getForRow(vec, skip));
+  }
+  std::sort(vecPair.begin(), vecPair.end(),
+            [](const std::pair<std::vector<int>, int> &a,
+               const std::pair<std::vector<int>, int> &b) {
+              return a.second < b.second;
+            });
+  size_t sizeVecPair = vecPair.size();
+  for (size_t i = 0; i < sizeVecPair; i++) {
+    std::vector<int> vecNew(vecPair[i].first);
+    std::vector<int> outputNew;
+    outputNew = this->h2HeuristicProcess(skip + 1, vecNew);
+    if (!outputNew.empty()) {
+      return outputNew;
+    } else {
+      continue;
+    }
+  }
+  return output;
+}
 
 void Chessboard::BFS(unsigned short size, const bool &boostMode) {
   std::vector<int> vec;
@@ -197,9 +282,6 @@ void Chessboard::BFS(unsigned short size, const bool &boostMode) {
     }
     output += "]";
     this->ptr_logger_->info("Chessboard::BFS", "Checking: " + output);
-    if (vec.back() == -1) {
-      continue;
-    }
     if (!this->checkIfCanAttack(vec)) {
       this->cheesboard_pos_ = vec;
       break;

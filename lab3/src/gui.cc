@@ -122,6 +122,7 @@ void Gui::runLoop() {
   // Make check box for boost mode. Using nana library.
   nana::checkbox boostMode{fm, nana::rectangle{10, 10, 200, 20}};
   nana::button findSolBFS(fm, "Find solution BFS");
+  nana::button findSolH2(fm, "Find solution H2");
   nana::button findSolDFS(fm, "Find solution DFS");
   nana::button graphSolBFS(fm, "Graph solutions BFS");
   nana::button graphSolDFS(fm, "Graph solutions DFS");
@@ -133,6 +134,17 @@ void Gui::runLoop() {
     nana::inputbox::integer size("Size of chessboard", 4, 4, 20, 1);
     if (ibox.show(size)) {
       this->ptr_chessboard_->BFS(size.value(), boostMode.checked());
+      std::string result = this->ptr_chessboard_->dumpChessboard();
+      this->showResult(result, fm);
+    }
+  });
+  findSolH2.events().click([&] {
+    this->ptr_logger_->info("Gui::runLoop", "Clicked find solution H2.");
+    this->ptr_stats_->reset();
+    nana::inputbox ibox(fm, "Find solution H2");
+    nana::inputbox::integer size("Size of chessboard", 4, 4, 20, 1);
+    if (ibox.show(size)) {
+      this->ptr_chessboard_->h2Heuristic(size.value(), boostMode.checked());
       std::string result = this->ptr_chessboard_->dumpChessboard();
       this->showResult(result, fm);
     }
@@ -176,10 +188,12 @@ void Gui::runLoop() {
   exit.events().click([&fm] { fm.close(); });
   fm.div(
       "vert"
-      "<<findSolBFS><findSolDFS>><<graphSolBFS><graphSolDFS><boostMode>> "
+      "<<findSolBFS><findSolDFS><findSolH2>><<graphSolBFS><graphSolDFS><"
+      "boostMode>> "
       "<exit>");
   fm["findSolBFS"] << findSolBFS;
   fm["findSolDFS"] << findSolDFS;
+  fm["findSolH2"] << findSolH2;
   fm["graphSolBFS"] << graphSolBFS;
   fm["graphSolDFS"] << graphSolDFS;
   fm["boostMode"] << boostMode;

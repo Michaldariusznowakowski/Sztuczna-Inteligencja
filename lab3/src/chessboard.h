@@ -81,8 +81,19 @@ class Chessboard {
   /**
    * @brief BFS algorithm.
    *
-   * @param size
+   * @param size    Size of the chessboard.
+   * @param boostMode  Boost mode.
    */
   void BFS(unsigned short size, const bool &boostMode = false);
+  /**
+   * @brief H2 heuristic algorithm.
+   *
+   * @param size  Size of the chessboard.
+   * @param boostMode  Boost mode.
+   */
+  void h2Heuristic(unsigned short size, const bool &boostMode = false);
+  std::vector<int> h2HeuristicProcess(int skip, std::vector<int> vec,
+                                      const bool &boostMode = false);
+  int h2getForRow(const std::vector<int> &vec, const unsigned short &column);
 };
 #endif
