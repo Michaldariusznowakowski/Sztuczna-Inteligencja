@@ -19,5 +19,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(lab1)
 add_subdirectory(lab3)
+add_subdirectory(lab5)
+
 
 #set(CMAKE_MODULE_PATH ./cmake-tools/CMakeChecksCache/cmake-checks-cache)
