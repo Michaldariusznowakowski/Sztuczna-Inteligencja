@@ -30,26 +30,36 @@ class PlotStats {
    * @param checkedStates
    */
   static void plotQueensStats(const std::string &title,
-                              const std::vector<unsigned long int> &times,
-                              const std::vector<int> &checkedStates,
-                              const std::vector<int> &generatedStates,
-                              const std::vector<unsigned int> &sizes) {
+                              const std::string &titles1,
+                              const std::string &titles2,
+                              const std::vector<long long unsigned int> &x1,
+                              const std::vector<double> &x2)
+                              {
+    std::vector<unsigned int> sizes;
+    for (unsigned int i = 0; i < x1.size(); i++) {
+      sizes.push_back(i + 1);
+    }
     auto figure = matplot::figure();
     figure->title(title);
-    auto ax = matplot::subplot(3, 1, 0);
-    matplot::bar(ax, sizes, times);
-    matplot::title(ax, "Time duration");
+    auto ax = matplot::subplot(2, 1, 0);
+    auto ax2 = matplot::subplot(2, 1, 1);
+    matplot::bar(ax2, sizes, x1);
+    matplot::title(ax2, titles1);
+    
+    std::vector<unsigned int> sizes2;
+    for (unsigned int i = 0; i < x2.size(); i++) {
+      sizes2.push_back(i + 1);
+    }
+    auto ax3 = matplot::subplot(2, 1, 2);
+    matplot::bar(ax3, sizes2, x2);
+    matplot::title(ax3, titles2);
 
-    auto ax2 = matplot::subplot(3, 1, 1);
-    matplot::bar(ax2, sizes, generatedStates);
-    matplot::title(ax2, "States generated");
-
-    auto ax3 = matplot::subplot(3, 1, 2);
-    matplot::bar(ax3, sizes, checkedStates);
-    matplot::title(ax3, "States checked");
-
-    // show the plot without blocking the execution
+    // show the plot and block the execution
     figure->draw();
+    std::cout << "Press enter to continue..." << std::endl;
+    std::cin.get();
+    std::cin.get();
+
   }
 };
 #endif
